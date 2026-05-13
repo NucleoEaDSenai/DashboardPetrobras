@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medições de Serviços Petrobras — Comparativo 2024–2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --green-deep: #00643c;
+    --green-mid: #008d4c;
+    --green-soft: #e6f4ec;
+    --yellow: #fdc82f;
+    --yellow-soft: #fff6d6;
+    --ink: #0d1f1a;
+    --ink-soft: #3c4944;
+    --muted: #6b7770;
+    --line: #d8ddd5;
+    --line-soft: #ecefe8;
+    --bg: #f6f5ef;
+    --paper: #ffffff;
+    --danger: #b53a2c;
+    --info: #1f5fa8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding: 0;
+  }
+
+  /* ====== HEADER / HERO ====== */
+  .hero {
+    background: linear-gradient(180deg, var(--green-deep) 0%, var(--green-mid) 100%);
+    color: white;
+    padding: 3rem 2rem 4.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(253,200,47,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+  }
+  .hero-badge .dot {
+    width: 6px; height: 6px;
+    background: var(--yellow);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+    max-width: 900px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--yellow);
+    font-weight: 400;
+  }
+  .hero p {
+    font-size: 1.05rem;
+    opacity: 0.85;
+    max-width: 650px;
+    font-weight: 300;
+  }
+
+  /* ====== CONTAINER ====== */
+  .container {
+    max-width: 1200px;
+    margin: -2.5rem auto 0;
+    padding: 0 2rem 4rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ====== CARDS PRINCIPAIS (KPIs) ====== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  .kpi {
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -16px rgba(0,100,60,0.15);
+  }
+  .kpi-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .kpi-value {
+    font-family: 'Fraunces', serif;
+    font-size: 2.1rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .kpi-value .cents {
+    font-size: 1.1rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .kpi-meta {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+  .kpi-meta strong { font-weight: 500; }
+  .kpi.featured {
+    background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+    color: white;
+    border: none;
+  }
+  .kpi.featured .kpi-year,
+  .kpi.featured .kpi-value,
+  .kpi.featured .kpi-meta { color: white; }
+  .kpi.featured .kpi-year { color: var(--yellow); }
+  .kpi.featured .kpi-value .cents { color: rgba(255,255,255,0.7); }
+  .kpi.featured .kpi-meta { border-top-color: rgba(255,255,255,0.2); }
+  .kpi-tag {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--yellow);
+    color: var(--ink);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ====== SEÇÕES ====== */
+  .section {
+    background: var(--paper);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--line);
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .section h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.75rem;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .section h2 .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--green-mid);
+    background: var(--green-soft);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 10px;
+    vertical-align: middle;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+  }
+  .section-sub {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 500px;
+  }
+
+  /* ====== LEGENDA ====== */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-swatch {
+    width: 18px; height: 4px;
+    border-radius: 2px;
+  }
+
+  /* ====== CHARTS ====== */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .chart-wrap.tall { height: 380px; }
+  .chart-wrap.med { height: 280px; }
+  .chart-wrap.short { height: 240px; }
+
+  /* ====== HIGHLIGHTS / PICOS-VALES ====== */
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .highlight {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 3px solid var(--green-mid);
+  }
+  .highlight-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .highlight-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  .highlight-row .arrow {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .arrow.up { background: var(--green-soft); color: var(--green-deep); }
+  .arrow.down { background: #fce8e5; color: var(--danger); }
+  .highlight-row strong {
+    font-weight: 500;
+    color: var(--ink);
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* ====== TABELA ====== */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background: var(--bg);
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  th.num, td.num {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--green-soft); }
+  tfoot td {
+    background: var(--ink);
+    color: white;
+    font-weight: 500;
+    border: none;
+  }
+  tfoot td.num { color: var(--yellow); }
+  .empty { color: var(--muted); }
+
+  /* ====== INSIGHTS ====== */
+  .insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .insight {
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .insight::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--green-mid);
+  }
+  .insight-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 8px;
+  }
+  .insight h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .insight p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .insight .num-big {
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    color: var(--green-deep);
+    font-weight: 500;
+    line-height: 1;
+    display: block;
+    margin: 8px 0;
+    letter-spacing: -0.02em;
+  }
+
+  /* ====== FOOTER ====== */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--line);
+    margin-top: 2rem;
+  }
+  footer strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 640px) {
+    .hero { padding: 2rem 1rem 3.5rem; }
+    .container { padding: 0 1rem 2rem; }
+    .section { padding: 1.25rem; }
+    .section h2 { font-size: 1.35rem; }
+    .kpi-value { font-size: 1.75rem; }
+  }
+
+  /* ====== ANIMAÇÕES DE ENTRADA ====== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .kpi, .section { animation: fadeUp 0.6s ease-out both; }
+  .kpi:nth-child(1) { animation-delay: 0.05s; }
+  .kpi:nth-child(2) { animation-delay: 0.15s; }
+  .kpi:nth-child(3) { animation-delay: 0.25s; }
+  .kpi:nth-child(4) { animation-delay: 0.35s; }
+</style>
+</head>
+<body>
+
+<!-- ============== HERO ============== -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="dot"></span> Relatório executivo · Atualizado em maio/2026</div>
+    <h1>Medições de Serviços <em>Petrobras</em><br>Comparativo plurianual 2024–2026</h1>
+    <p>Análise consolidada de todos os valores faturados mês a mês, com totais anuais, médias, picos, vales e detalhamento quinzenal do ano corrente.</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ============== KPIs ============== -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-year">Exercício 2024</div>
+      <div class="kpi-value">R$ 359.810<span class="cents">,61</span></div>
+      <div class="kpi-meta">
+        <span>Média: <strong>R$ 29.984</strong></span>
+        <span>12 meses</span>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-year">Exercício 2025</div>
+      <div class="kpi-value">R$ 443.824<span class="cents">,27</span></div>
+      <div class="kpi-meta">
+        <span>Média: <strong>R$ 36.985</strong></span>
+        <span style="color: var(--green-mid); font-weight: 500;">+23% vs 2024</span>
+      </div>
+    </div>
+    <div class="kpi featured">
+      <div class="kpi-tag">Em curso</div>
+      <div class="kpi-year">Exercício 2026</div>
+      <div class="kpi-value">R$ 353.836<span class="cents">,62</span></div>
+      <div class="kpi-meta">
+        <span>Média: <strong>R$ 70.767</strong></span>
+        <span>Jan a Mai (parcial)</span>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-year">Total acumulado</div>
+      <div class="kpi-value">R$ 1.157.471<span class="cents">,50</span></div>
+      <div class="kpi-meta">
+        <span>29 meses computados</span>
+        <span><strong>3 anos</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== EVOLUÇÃO MENSAL ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">01</span>Evolução mensal comparada</h2>
+      <p class="section-sub">Cada linha representa um ano. Compare o mesmo mês entre exercícios diferentes.</p>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-swatch" style="background: #6b7770;"></span>2024</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: #1f5fa8;"></span>2025</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: #00643c;"></span>2026</span>
+    </div>
+    <div class="chart-wrap tall">
+      <canvas id="chartEvolucao"></canvas>
+    </div>
+  </section>
+
+  <!-- ============== TOTAIS ANUAIS ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">02</span>Totais anuais</h2>
+      <p class="section-sub">2026 ainda em curso — somente jan a mai (1ª quinzena) considerados.</p>
+    </div>
+    <div class="chart-wrap short">
+      <canvas id="chartTotais"></canvas>
+    </div>
+  </section>
+
+  <!-- ============== DETALHAMENTO 2026 ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">03</span>Detalhamento quinzenal de 2026</h2>
+      <p class="section-sub">Medições por período de competência, mostrando a sazonalidade dentro de cada mês.</p>
+    </div>
+    <div class="chart-wrap med">
+      <canvas id="chart2026"></canvas>
+    </div>
+  </section>
+
+  <!-- ============== PICOS E VALES ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">04</span>Picos e vales</h2>
+      <p class="section-sub">Maior e menor medição registrada em cada ano.</p>
+    </div>
+    <div class="highlights">
+      <div class="highlight">
+        <div class="highlight-year">2024</div>
+        <div class="highlight-row"><span class="arrow up">▲</span> Maior · Junho <strong>R$ 68.933,71</strong></div>
+        <div class="highlight-row"><span class="arrow down">▼</span> Menor · Janeiro <strong>R$ 184,15</strong></div>
+      </div>
+      <div class="highlight">
+        <div class="highlight-year">2025</div>
+        <div class="highlight-row"><span class="arrow up">▲</span> Maior · Janeiro <strong>R$ 70.906,94</strong></div>
+        <div class="highlight-row"><span class="arrow down">▼</span> Menor · Outubro <strong>R$ 10.635,70</strong></div>
+      </div>
+      <div class="highlight">
+        <div class="highlight-year">2026 (parcial)</div>
+        <div class="highlight-row"><span class="arrow up">▲</span> Maior · Abril <strong>R$ 108.409,17</strong></div>
+        <div class="highlight-row"><span class="arrow down">▼</span> Menor · Fevereiro <strong>R$ 33.887,66</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== INSIGHTS ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">05</span>Insights da análise</h2>
+      <p class="section-sub">Pontos-chave que merecem atenção.</p>
+    </div>
+    <div class="insights">
+      <div class="insight">
+        <div class="insight-label">Crescimento</div>
+        <h3>2025 superou 2024 em quase um quarto</h3>
+        <span class="num-big">+23%</span>
+        <p>O exercício 2025 fechou R$ 84.013,66 acima de 2024, o que indica intensificação das demandas de serviço.</p>
+      </div>
+      <div class="insight">
+        <div class="insight-label">Aceleração</div>
+        <h3>2026 já alcançou 98% do total de 2024</h3>
+        <span class="num-big">4,5 meses</span>
+        <p>Bastaram quatro meses e meio para 2026 quase igualar todo o ano de 2024. A média mensal mais que dobrou.</p>
+      </div>
+      <div class="insight">
+        <div class="insight-label">Pico histórico</div>
+        <h3>Abril/2026 é o maior mês da série</h3>
+        <span class="num-big">R$ 108mil</span>
+        <p>Puxado pela 2ª quinzena (R$ 72.044,45), abril/2026 supera todos os meses anteriores em três anos de medições.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== TABELA COMPARATIVA ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">06</span>Tabela comparativa completa</h2>
+      <p class="section-sub">Todos os valores mensais lado a lado para fácil conferência.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th class="num">2024</th>
+            <th class="num">2025</th>
+            <th class="num">2026</th>
+            <th class="num">Var. 25→26</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpo"></tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td class="num">R$ 359.810,61</td>
+            <td class="num">R$ 443.824,27</td>
+            <td class="num">R$ 353.836,62*</td>
+            <td class="num">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">* 2026 parcial — janeiro a maio (1ª quinzena apenas em maio).</p>
+  </section>
+
+  <!-- ============== DETALHE QUINZENAL ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">07</span>Medições das quinzenas de 2026</h2>
+      <p class="section-sub">Períodos exatos de competência conforme medições oficiais.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Período</th>
+            <th class="num">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Janeiro 1</strong></td><td>18/12/2025 a 09/01/2026</td><td class="num">R$ 35.431,28</td></tr>
+          <tr><td><strong>Janeiro 2</strong></td><td>10/01/2026 a 25/01/2026</td><td class="num">R$ 32.326,45</td></tr>
+          <tr><td><strong>Fevereiro</strong></td><td>26/01/2026 a 09/02/2026</td><td class="num">R$ 20.376,85</td></tr>
+          <tr><td><strong>Fevereiro 2</strong></td><td>10/02/2026 a 25/02/2026</td><td class="num">R$ 13.510,81</td></tr>
+          <tr><td><strong>Março 1</strong></td><td>26/02/2026 a 09/03/2026</td><td class="num">R$ 30.432,70</td></tr>
+          <tr><td><strong>Março 2</strong></td><td>10/03/2026 a 25/03/2026</td><td class="num">R$ 31.096,81</td></tr>
+          <tr><td><strong>Abril 1</strong></td><td>26/03/2026 a 09/04/2026</td><td class="num">R$ 36.364,72</td></tr>
+          <tr><td><strong>Abril 2</strong></td><td>10/04/2026 a 25/04/2026</td><td class="num">R$ 72.044,45</td></tr>
+          <tr><td><strong>Maio 1</strong></td><td>26/04/2026 a 09/05/2026</td><td class="num">R$ 82.252,55</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <strong>Comparativo de Medições Petrobras</strong> · Dashboard gerado em maio de 2026 · Dados parciais para o exercício corrente
+</footer>
+
+<script>
+  // ============== DADOS ==============
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const d2024 = [184.15, 19189.26, 22479.55, 21371.29, 22677.56, 68933.71, 51054.94, 10027.56, 23607.66, 50454.15, 13702.54, 56128.24];
+  const d2025 = [70906.94, 31036.33, 38852.20, 57123.08, 18969.52, 23417.23, 56766.16, 11853.20, 23784.03, 10635.70, 61230.74, 39249.14];
+  const d2026 = [67757.73, 33887.66, 61529.51, 108409.17, 82252.55, null, null, null, null, null, null, null];
+
+  const fmtBRL = v => v == null ? '—' : v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  const fmtCurto = v => v == null ? '' : 'R$ ' + (v/1000).toFixed(0) + 'k';
+
+  // Configurações compartilhadas Chart.js
+  Chart.defaults.font.family = "'IBM Plex Sans', system-ui, sans-serif";
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = '#3c4944';
+  Chart.defaults.borderColor = '#ecefe8';
+
+  // ============== GRÁFICO 1: EVOLUÇÃO ==============
+  new Chart(document.getElementById('chartEvolucao'), {
+    type: 'line',
+    data: {
+      labels: meses,
+      datasets: [
+        { label: '2024', data: d2024, borderColor: '#6b7770', backgroundColor: '#6b7770',
+          borderDash: [6,4], tension: 0.35, pointRadius: 3, pointHoverRadius: 7, borderWidth: 2 },
+        { label: '2025', data: d2025, borderColor: '#1f5fa8', backgroundColor: '#1f5fa8',
+          tension: 0.35, pointRadius: 3, pointHoverRadius: 7, borderWidth: 2 },
+        { label: '2026', data: d2026, borderColor: '#00643c', backgroundColor: '#00643c',
+          tension: 0.35, pointRadius: 4, pointHoverRadius: 8, borderWidth: 3, spanGaps: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f1a', padding: 12, cornerRadius: 8, titleFont: { weight: 600 },
+          callbacks: { label: ctx => '  ' + ctx.dataset.label + ': ' + fmtBRL(ctx.parsed.y) }
+        }
+      },
+      scales: {
+        x: { ticks: { autoSkip: false }, grid: { display: false } },
+        y: { ticks: { callback: v => fmtCurto(v) }, grid: { color: '#ecefe8' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // ============== GRÁFICO 2: TOTAIS ==============
+  new Chart(document.getElementById('chartTotais'), {
+    type: 'bar',
+    data: {
+      labels: ['2024', '2025', '2026 (parcial)'],
+      datasets: [{
+        data: [359810.61, 443824.27, 353836.62],
+        backgroundColor: ['#6b7770', '#1f5fa8', '#00643c'],
+        borderRadius: 8, barThickness: 32
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f1a', padding: 12, cornerRadius: 8,
+          callbacks: { label: ctx => fmtBRL(ctx.parsed.x) }
+        }
+      },
+      scales: {
+        x: { ticks: { callback: v => fmtCurto(v) }, grid: { color: '#ecefe8' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ============== GRÁFICO 3: QUINZENAS ==============
+  new Chart(document.getElementById('chart2026'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan 1ª', 'Jan 2ª', 'Fev 1ª', 'Fev 2ª', 'Mar 1ª', 'Mar 2ª', 'Abr 1ª', 'Abr 2ª', 'Mai 1ª'],
+      datasets: [{
+        data: [35431.28, 32326.45, 20376.85, 13510.81, 30432.70, 31096.81, 36364.72, 72044.45, 82252.55],
+        backgroundColor: ctx => {
+          const v = ctx.parsed.y;
+          if (v >= 70000) return '#00643c';
+          if (v >= 40000) return '#008d4c';
+          return '#a8c8b5';
+        },
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f1a', padding: 12, cornerRadius: 8,
+          callbacks: { label: ctx => fmtBRL(ctx.parsed.y) }
+        }
+      },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }, grid: { display: false } },
+        y: { ticks: { callback: v => fmtCurto(v) }, grid: { color: '#ecefe8' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // ============== TABELA ==============
+  const tbody = document.getElementById('tabelaCorpo');
+  meses.forEach((m, i) => {
+    const v25 = d2025[i], v26 = d2026[i];
+    let varCell = '<span class="empty">—</span>';
+    if (v25 != null && v26 != null) {
+      const pct = ((v26 - v25) / v25) * 100;
+      const cor = pct >= 0 ? 'var(--green-mid)' : 'var(--danger)';
+      const sinal = pct >= 0 ? '+' : '';
+      varCell = `<span style="color:${cor}; font-weight:500;">${sinal}${pct.toFixed(1)}%</span>`;
+    }
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><strong>${m}</strong></td>
+        <td class="num">${d2024[i] != null ? fmtBRL(d2024[i]) : '<span class="empty">—</span>'}</td>
+        <td class="num">${v25 != null ? fmtBRL(v25) : '<span class="empty">—</span>'}</td>
+        <td class="num">${v26 != null ? fmtBRL(v26) : '<span class="empty">—</span>'}</td>
+        <td class="num">${varCell}</td>
+      </tr>
+    `);
+  });
+</script>
+
+</body>
+</html>
