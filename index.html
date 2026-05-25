@@ -462,15 +462,15 @@
     <div class="kpi featured">
       <div class="kpi-tag">Em curso</div>
       <div class="kpi-year">Exercício 2026</div>
-      <div class="kpi-value">R$ 353.836<span class="cents">,62</span></div>
+      <div class="kpi-value">R$ 413.871<span class="cents">,80</span></div>
       <div class="kpi-meta">
-        <span>Média: <strong>R$ 70.767</strong></span>
-        <span>Jan a Mai (parcial)</span>
+        <span>Média: <strong>R$ 82.774</strong></span>
+        <span>Jan a Mai (fechado)</span>
       </div>
     </div>
     <div class="kpi">
       <div class="kpi-year">Total acumulado</div>
-      <div class="kpi-value">R$ 1.157.471<span class="cents">,50</span></div>
+      <div class="kpi-value">R$ 1.217.506<span class="cents">,68</span></div>
       <div class="kpi-meta">
         <span>29 meses computados</span>
         <span><strong>3 anos</strong></span>
@@ -535,7 +535,7 @@
       </div>
       <div class="highlight">
         <div class="highlight-year">2026 (parcial)</div>
-        <div class="highlight-row"><span class="arrow up">▲</span> Maior · Abril <strong>R$ 108.409,17</strong></div>
+        <div class="highlight-row"><span class="arrow up">▲</span> Maior · Maio <strong>R$ 142.287,73</strong></div>
         <div class="highlight-row"><span class="arrow down">▼</span> Menor · Fevereiro <strong>R$ 33.887,66</strong></div>
       </div>
     </div>
@@ -556,15 +556,15 @@
       </div>
       <div class="insight">
         <div class="insight-label">Aceleração</div>
-        <h3>2026 já alcançou 98% do total de 2024</h3>
-        <span class="num-big">4,5 meses</span>
-        <p>Bastaram quatro meses e meio para 2026 quase igualar todo o ano de 2024. A média mensal mais que dobrou.</p>
+        <h3>2026 já superou 2024 inteiro em 5 meses</h3>
+        <span class="num-big">115%</span>
+        <p>Em apenas 5 meses, 2026 acumula R$ 413.871,80 — já ultrapassando o total de 2024 (R$ 359.810,61). A média mensal mais que dobrou em relação a 2024.</p>
       </div>
       <div class="insight">
         <div class="insight-label">Pico histórico</div>
-        <h3>Abril/2026 é o maior mês da série</h3>
-        <span class="num-big">R$ 108mil</span>
-        <p>Puxado pela 2ª quinzena (R$ 72.044,45), abril/2026 supera todos os meses anteriores em três anos de medições.</p>
+        <h3>Maio/2026 é o maior mês da série</h3>
+        <span class="num-big">R$ 142mil</span>
+        <p>Somando as duas quinzenas (R$ 82.252,55 + R$ 60.035,18), maio/2026 ultrapassou até mesmo abril e se tornou o maior mês em três anos de medições.</p>
       </div>
     </div>
   </section>
@@ -592,13 +592,13 @@
             <td>Total</td>
             <td class="num">R$ 359.810,61</td>
             <td class="num">R$ 443.824,27</td>
-            <td class="num">R$ 353.836,62*</td>
+            <td class="num">R$ 413.871,80*</td>
             <td class="num">—</td>
           </tr>
         </tfoot>
       </table>
     </div>
-    <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">* 2026 parcial — janeiro a maio (1ª quinzena apenas em maio).</p>
+    <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">* 2026 parcial — janeiro a maio (fechado).</p>
   </section>
 
   <!-- ============== DETALHE QUINZENAL ============== -->
@@ -626,6 +626,7 @@
           <tr><td><strong>Abril 1</strong></td><td>26/03/2026 a 09/04/2026</td><td class="num">R$ 36.364,72</td></tr>
           <tr><td><strong>Abril 2</strong></td><td>10/04/2026 a 25/04/2026</td><td class="num">R$ 72.044,45</td></tr>
           <tr><td><strong>Maio 1</strong></td><td>26/04/2026 a 09/05/2026</td><td class="num">R$ 82.252,55</td></tr>
+          <tr><td><strong>Maio 2</strong></td><td>10/05/2026 a 25/05/2026</td><td class="num">R$ 60.035,18</td></tr>
         </tbody>
       </table>
     </div>
@@ -642,7 +643,7 @@
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const d2024 = [184.15, 19189.26, 22479.55, 21371.29, 22677.56, 68933.71, 51054.94, 10027.56, 23607.66, 50454.15, 13702.54, 56128.24];
   const d2025 = [70906.94, 31036.33, 38852.20, 57123.08, 18969.52, 23417.23, 56766.16, 11853.20, 23784.03, 10635.70, 61230.74, 39249.14];
-  const d2026 = [67757.73, 33887.66, 61529.51, 108409.17, 82252.55, null, null, null, null, null, null, null];
+  const d2026 = [67757.73, 33887.66, 61529.51, 108409.17, 142287.73, null, null, null, null, null, null, null];
 
   const fmtBRL = v => v == null ? '—' : v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
   const fmtCurto = v => v == null ? '' : 'R$ ' + (v/1000).toFixed(0) + 'k';
@@ -690,7 +691,7 @@
     data: {
       labels: ['2024', '2025', '2026 (parcial)'],
       datasets: [{
-        data: [359810.61, 443824.27, 353836.62],
+        data: [359810.61, 443824.27, 413871.80],
         backgroundColor: ['#6b7770', '#1f5fa8', '#00643c'],
         borderRadius: 8, barThickness: 32
       }]
@@ -715,9 +716,9 @@
   new Chart(document.getElementById('chart2026'), {
     type: 'bar',
     data: {
-      labels: ['Jan 1ª', 'Jan 2ª', 'Fev 1ª', 'Fev 2ª', 'Mar 1ª', 'Mar 2ª', 'Abr 1ª', 'Abr 2ª', 'Mai 1ª'],
+      labels: ['Jan 1ª', 'Jan 2ª', 'Fev 1ª', 'Fev 2ª', 'Mar 1ª', 'Mar 2ª', 'Abr 1ª', 'Abr 2ª', 'Mai 1ª', 'Mai 2ª'],
       datasets: [{
-        data: [35431.28, 32326.45, 20376.85, 13510.81, 30432.70, 31096.81, 36364.72, 72044.45, 82252.55],
+        data: [35431.28, 32326.45, 20376.85, 13510.81, 30432.70, 31096.81, 36364.72, 72044.45, 82252.55, 60035.18],
         backgroundColor: ctx => {
           const v = ctx.parsed.y;
           if (v >= 70000) return '#00643c';
