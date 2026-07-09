@@ -393,6 +393,119 @@
     letter-spacing: -0.02em;
   }
 
+  /* ====== QUANTITATIVO POR CÓDIGO ====== */
+  .qtd-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .qtd-chip {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .qtd-chip strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .qtd-chip .swatch {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .qtd-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .qtd-controls label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .qtd-select {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-width: 100%;
+    cursor: pointer;
+    outline: none;
+  }
+  .qtd-select:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px var(--green-soft); }
+  .ano-tabs {
+    display: inline-flex;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+    margin: 1.75rem 0 1rem;
+  }
+  .ano-tab {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    padding: 7px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .ano-tab:hover { color: var(--green-deep); }
+  .ano-tab.ativo {
+    background: var(--green-deep);
+    color: white;
+  }
+  .qtd-table td, .qtd-table th { padding: 9px 10px; font-size: 13px; }
+  .qtd-table th.mes, .qtd-table td.qtd {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .qtd-table td.qtd { color: var(--ink); }
+  .qtd-table td.qtd.zero { color: var(--line); }
+  .qtd-table td.qtd.max {
+    background: var(--yellow-soft);
+    font-weight: 500;
+    border-radius: 4px;
+  }
+  .qtd-table .cod-cell { white-space: nowrap; }
+  .qtd-table .cod-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--green-mid);
+    background: var(--green-soft);
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-right: 8px;
+    display: inline-block;
+    min-width: 32px;
+    text-align: center;
+  }
+  .qtd-table td.total-col, .qtd-table th.total-col {
+    font-weight: 600;
+    border-left: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .qtd-table tfoot td { background: var(--ink); color: white; }
+  .qtd-table tfoot td.qtd, .qtd-table tfoot td.total-col { color: var(--yellow); background: var(--ink); }
+
   /* ====== FOOTER ====== */
   footer {
     text-align: center;
@@ -633,6 +746,45 @@
     </div>
   </section>
 
+  <!-- ============== QUANTITATIVO POR CÓDIGO DE SERVIÇO ============== -->
+  <section class="section">
+    <div class="section-header">
+      <h2><span class="num">08</span>Quantitativo por código de serviço</h2>
+      <p class="section-sub">Itens de serviço entregues por mês, classificados pelos códigos da PPU (10 a 260).</p>
+    </div>
+
+    <div class="qtd-chips">
+      <span class="qtd-chip">Total do período <strong>1.516 itens</strong></span>
+      <span class="qtd-chip"><span class="swatch" style="background:#6b7770;"></span>2024 <strong>438</strong></span>
+      <span class="qtd-chip"><span class="swatch" style="background:#1f5fa8;"></span>2025 <strong>536</strong></span>
+      <span class="qtd-chip"><span class="swatch" style="background:#00643c;"></span>2026 · jan–jun <strong>542</strong></span>
+    </div>
+
+    <div class="qtd-controls">
+      <label for="selCodigo">Filtrar gráfico:</label>
+      <select id="selCodigo" class="qtd-select"></select>
+    </div>
+    <div class="chart-wrap med">
+      <canvas id="chartQtd"></canvas>
+    </div>
+
+    <div class="ano-tabs" id="anoTabs" role="tablist">
+      <button class="ano-tab" data-ano="2024">2024</button>
+      <button class="ano-tab" data-ano="2025">2025</button>
+      <button class="ano-tab ativo" data-ano="2026">2026</button>
+    </div>
+    <div class="table-wrap">
+      <table class="qtd-table">
+        <thead id="qtdHead"></thead>
+        <tbody id="qtdCorpo"></tbody>
+        <tfoot id="qtdRodape"></tfoot>
+      </table>
+    </div>
+    <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">
+      Célula destacada em amarelo = maior quantitativo do código no ano. Os códigos 140 (Tradução – apostila/e-book), 220 (Edição/Programação em software) e 230 (Cadastro de Prova/Questionário) não tiveram ocorrências no período.
+    </p>
+  </section>
+
 </div>
 
 <footer>
@@ -766,6 +918,131 @@
       </tr>
     `);
   });
+
+  // ============== QUANTITATIVO POR CÓDIGO DE SERVIÇO ==============
+  const SERVICOS = {
+    10:'Planejamento – Projeto instrucional', 20:'Projeto Gráfico',
+    30:'Roteiro web – Avançado', 40:'Roteiro web – Intermediário', 50:'Roteiro web – Básico',
+    60:'Conteúdo web – Avançado', 70:'Conteúdo web – Intermediário', 80:'Conteúdo web – Básico',
+    90:'Encapsulamento', 100:'Apostila', 110:'Onepage', 120:'Infográfico',
+    130:'Tradução – Cont. web/Encapsulamento', 150:'Tradução – Onepage', 160:'Tradução – Infográfico',
+    170:'Manutenção de conteúdos', 180:'Personagem 2D', 190:'Criação de imagens/ilustrações',
+    200:'Tratamento de imagens', 210:'Modelagem 3D', 240:'Validação/Homologação de terceiros',
+    250:'Suporte a software de autoria', 260:'Apoio à produção por autoria digital'
+  };
+  const QTD = {"2024":{"1":{"10":18,"60":1,"90":8,"100":4,"120":1,"170":3},"2":{"20":3,"50":23,"70":18,"80":25},"3":{"10":13,"60":1,"90":1,"170":3,"100":5},"4":{"10":1,"170":5,"30":3,"60":3,"20":3,"90":2},"5":{"10":2,"60":1,"130":2,"170":4,"240":1,"180":4},"6":{"100":3,"20":3,"70":2,"40":4,"80":2,"50":3,"170":5,"180":1,"10":8,"190":11,"30":1},"7":{"100":3,"20":1,"10":5,"130":3,"170":2,"30":2,"40":2,"50":1,"60":2,"70":2,"80":1,"120":10,"190":34},"8":{"100":3,"20":1,"10":3,"80":3,"170":3,"50":3},"9":{"90":2,"170":8,"10":1,"40":2},"10":{"100":10,"190":1,"20":4,"160":1,"10":11,"170":2,"240":5,"30":1,"40":2,"60":1,"70":2,"90":2},"11":{"100":4,"10":5,"130":1,"170":3,"240":3,"50":12,"80":12,"90":2},"12":{"100":2,"40":2,"60":3,"70":2,"30":3,"50":15,"80":15,"90":4,"130":4,"170":2,"240":4}},"2025":{"1":{"90":3,"240":6,"30":2,"190":6,"60":2,"170":1,"10":2,"200":3,"100":2,"120":1},"2":{"90":11,"170":5,"240":10,"10":5,"110":1,"60":1,"120":3,"20":2,"100":1,"180":2,"30":1},"3":{"10":22,"170":5,"240":6,"90":6,"50":8,"20":2,"30":1,"40":6,"100":2,"190":1,"250":1},"4":{"240":9,"90":7,"10":7,"50":6,"170":2,"70":1,"40":1,"190":7,"100":3,"20":1,"60":1,"30":1},"5":{"240":9,"90":7,"10":7,"50":6,"170":2,"70":1,"40":1,"190":7,"100":3,"20":1,"60":1,"30":1},"6":{"240":4,"250":1,"90":3,"10":8,"50":3,"80":3,"20":1,"100":2,"170":2,"160":1,"150":1,"190":2,"120":1,"180":1,"70":1,"40":1},"7":{"90":2,"240":5,"170":6,"50":3,"80":4,"10":3,"160":1,"150":1,"40":1,"70":1},"8":{"200":2,"190":14,"170":6,"90":2,"240":3,"50":10,"80":10,"10":11,"40":1,"70":1,"100":2},"9":{"40":3,"70":3,"240":7,"50":8,"80":8,"170":5,"90":3,"20":3,"100":2,"60":1,"30":1,"190":1,"200":1,"120":1,"10":4},"10":{"150":1,"90":4,"240":10,"170":5,"50":2,"80":2,"10":2,"20":1,"100":5,"260":1,"60":1,"30":1,"190":4},"11":{"10":10,"170":4,"80":6,"50":6,"150":1,"90":4,"60":5,"30":4,"110":3,"70":1,"40":1,"240":9,"180":2,"190":1,"100":3,"20":1,"250":1},"12":{"240":7,"90":6,"60":1,"30":1,"50":6,"80":6,"100":5,"10":6}},"2026":{"1":{"10":23,"240":16,"170":6,"50":6,"80":6,"130":3,"190":3,"90":9,"30":3,"60":3,"70":3,"40":3,"20":2},"2":{"60":2,"30":2,"50":6,"80":6,"90":4,"240":23,"170":1,"10":3,"250":1,"190":3,"70":1,"40":1},"3":{"80":14,"50":14,"90":13,"240":19,"250":1,"170":2,"10":5,"150":1,"70":2,"40":2,"190":2,"200":1,"20":3,"100":3,"120":1},"4":{"70":10,"40":10,"80":16,"50":16,"170":11,"20":3,"90":9,"190":5,"10":16,"130":1,"60":1,"30":1,"250":1,"100":1,"120":2},"5":{"10":18,"20":4,"30":2,"40":14,"50":15,"60":2,"70":14,"80":15,"90":3,"100":2,"120":1,"170":5,"180":1,"190":16,"200":4,"210":1,"240":2,"250":1},"6":{"50":10,"80":10,"40":12,"70":10,"120":3,"90":5,"10":14,"170":8,"240":2,"250":1,"200":2,"190":15,"20":2,"100":3}}};
+
+  const anosQtd = ['2024', '2025', '2026'];
+  const mesesAno = { '2024': 12, '2025': 12, '2026': 6 };
+  const codigos = Object.keys(SERVICOS).map(Number).sort((a, b) => a - b);
+  const corAno = { '2024': '#6b7770', '2025': '#1f5fa8', '2026': '#00643c' };
+
+  const qtdDe = (ano, mes, cod) => (QTD[ano][mes] && QTD[ano][mes][cod]) || 0;
+  const totalMes = (ano, mes, cod) => cod === 'todos'
+    ? Object.values(QTD[ano][mes] || {}).reduce((s, v) => s + v, 0)
+    : qtdDe(ano, mes, cod);
+
+  // --- Gráfico: série de 30 meses com filtro por código ---
+  const labelsQtd = [], serieAnos = [];
+  anosQtd.forEach(ano => {
+    for (let m = 1; m <= mesesAno[ano]; m++) {
+      labelsQtd.push(meses[m - 1] + '/' + ano.slice(2));
+      serieAnos.push(ano);
+    }
+  });
+
+  const selCodigo = document.getElementById('selCodigo');
+  selCodigo.insertAdjacentHTML('beforeend', '<option value="todos">Todos os códigos (total de itens)</option>');
+  codigos.forEach(c => {
+    selCodigo.insertAdjacentHTML('beforeend', `<option value="${c}">${c} — ${SERVICOS[c]}</option>`);
+  });
+
+  const dadosGrafico = cod => labelsQtd.map((_, i) => {
+    const ano = serieAnos[i];
+    const mes = String((i - anosQtd.slice(0, anosQtd.indexOf(ano)).reduce((s, a) => s + mesesAno[a], 0)) + 1);
+    return totalMes(ano, mes, cod === 'todos' ? 'todos' : String(cod));
+  });
+
+  const chartQtd = new Chart(document.getElementById('chartQtd'), {
+    type: 'bar',
+    data: {
+      labels: labelsQtd,
+      datasets: [{
+        data: dadosGrafico('todos'),
+        backgroundColor: labelsQtd.map((_, i) => corAno[serieAnos[i]]),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f1a', padding: 12, cornerRadius: 8,
+          callbacks: { label: ctx => ctx.parsed.y + (ctx.parsed.y === 1 ? ' item' : ' itens') }
+        }
+      },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 60, minRotation: 60, font: { size: 10 } }, grid: { display: false } },
+        y: { grid: { color: '#ecefe8' }, beginAtZero: true, ticks: { precision: 0 } }
+      }
+    }
+  });
+
+  selCodigo.addEventListener('change', () => {
+    chartQtd.data.datasets[0].data = dadosGrafico(selCodigo.value);
+    chartQtd.update();
+  });
+
+  // --- Tabela matriz códigos × meses, com abas de ano ---
+  function montarTabelaQtd(ano) {
+    const nMeses = mesesAno[ano];
+    const head = document.getElementById('qtdHead');
+    const corpo = document.getElementById('qtdCorpo');
+    const rodape = document.getElementById('qtdRodape');
+
+    let ths = '<tr><th>Código de serviço</th>';
+    for (let m = 1; m <= nMeses; m++) ths += `<th class="mes">${meses[m - 1]}</th>`;
+    ths += '<th class="mes total-col">Total</th></tr>';
+    head.innerHTML = ths;
+
+    corpo.innerHTML = '';
+    codigos.forEach(cod => {
+      const valores = [];
+      for (let m = 1; m <= nMeses; m++) valores.push(qtdDe(ano, String(m), String(cod)));
+      const total = valores.reduce((s, v) => s + v, 0);
+      if (total === 0) return; // omite códigos sem ocorrência no ano
+      const maior = Math.max(...valores);
+      let tds = `<td class="cod-cell"><span class="cod-num">${cod}</span>${SERVICOS[cod]}</td>`;
+      valores.forEach(v => {
+        const classes = ['qtd'];
+        if (v === 0) classes.push('zero');
+        else if (v === maior) classes.push('max');
+        tds += `<td class="${classes.join(' ')}">${v === 0 ? '·' : v}</td>`;
+      });
+      tds += `<td class="qtd total-col">${total}</td>`;
+      corpo.insertAdjacentHTML('beforeend', `<tr>${tds}</tr>`);
+    });
+
+    let tf = '<td>Total do mês</td>';
+    let totalAno = 0;
+    for (let m = 1; m <= nMeses; m++) {
+      const t = totalMes(ano, String(m), 'todos');
+      totalAno += t;
+      tf += `<td class="qtd">${t}</td>`;
+    }
+    tf += `<td class="qtd total-col">${totalAno}</td>`;
+    rodape.innerHTML = `<tr>${tf}</tr>`;
+  }
+
+  document.querySelectorAll('.ano-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ano-tab').forEach(b => b.classList.remove('ativo'));
+      btn.classList.add('ativo');
+      montarTabelaQtd(btn.dataset.ano);
+    });
+  });
+  montarTabelaQtd('2026');
 </script>
 
 </body>
