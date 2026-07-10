@@ -870,6 +870,7 @@
       <button class="ano-tab" data-ano="2024">2024</button>
       <button class="ano-tab" data-ano="2025">2025</button>
       <button class="ano-tab ativo" data-ano="2026">2026</button>
+      <button class="ano-tab" data-ano="consolidado">Consolidado · 2024 a 2026</button>
     </div>
     <div class="table-wrap">
       <table class="qtd-table">
@@ -1119,11 +1120,47 @@
 
   // --- Tabela matriz códigos × meses, com abas de ano ---
   function montarTabelaQtd(ano) {
-    const nMeses = mesesAno[ano];
     const head = document.getElementById('qtdHead');
     const corpo = document.getElementById('qtdCorpo');
     const rodape = document.getElementById('qtdRodape');
 
+    if (ano === 'consolidado') {
+      let thsC = '<tr><th>Código de serviço</th>';
+      anosQtd.forEach(a => { thsC += `<th class="mes">${a}</th>`; });
+      thsC += '<th class="mes total-col">Total geral</th></tr>';
+      head.innerHTML = thsC;
+
+      corpo.innerHTML = '';
+      const totaisPorAno = { '2024': 0, '2025': 0, '2026': 0 };
+      codigos.forEach(cod => {
+        const valoresAno = anosQtd.map(a => Object.keys(QTD[a]).reduce((s, m) => s + qtdDe(a, m, String(cod)), 0));
+        const totalGeral = valoresAno.reduce((s, v) => s + v, 0);
+        if (totalGeral === 0) return; // omite códigos sem ocorrência em nenhum ano
+        anosQtd.forEach((a, i) => { totaisPorAno[a] += valoresAno[i]; });
+        const maior = Math.max(...valoresAno);
+        let tdsC = `<td class="cod-cell"><span class="cod-num">${cod}</span>${SERVICOS[cod]}</td>`;
+        valoresAno.forEach(v => {
+          const classes = ['qtd'];
+          if (v === 0) classes.push('zero');
+          else if (v === maior) classes.push('max');
+          tdsC += `<td class="${classes.join(' ')}">${v === 0 ? '·' : v}</td>`;
+        });
+        tdsC += `<td class="qtd total-col">${totalGeral}</td>`;
+        corpo.insertAdjacentHTML('beforeend', `<tr>${tdsC}</tr>`);
+      });
+
+      let tfC = '<td>Total do ano</td>';
+      let totalGeralTudo = 0;
+      anosQtd.forEach(a => {
+        tfC += `<td class="qtd">${totaisPorAno[a]}</td>`;
+        totalGeralTudo += totaisPorAno[a];
+      });
+      tfC += `<td class="qtd total-col">${totalGeralTudo}</td>`;
+      rodape.innerHTML = `<tr>${tfC}</tr>`;
+      return;
+    }
+
+    const nMeses = mesesAno[ano];
     let ths = '<tr><th>Código de serviço</th>';
     for (let m = 1; m <= nMeses; m++) ths += `<th class="mes">${meses[m - 1]}</th>`;
     ths += '<th class="mes total-col">Total</th></tr>';
