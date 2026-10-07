@@ -544,6 +544,56 @@
     outline: none;
   }
   .qtd-select:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px var(--green-soft); }
+  .periodo-filtro {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 1.25rem;
+  }
+  .periodo-titulo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .periodo-campos {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .periodo-atalhos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .atalho {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .atalho:hover { border-color: var(--green-mid); color: var(--green-deep); }
+  .atalho.ativo { background: var(--green-deep); border-color: var(--green-deep); color: white; }
+  .qtd-table td.vazio { text-align: center; color: var(--muted); padding: 24px; }
+  @media (max-width: 640px) {
+    .periodo-atalhos { margin-left: 0; }
+  }
   .ano-tabs {
     display: inline-flex;
     background: var(--bg);
@@ -854,12 +904,18 @@
       
     </div>
 
-    <div class="qtd-chips">
-      <span class="qtd-chip">Total do período <strong>1.799 itens</strong></span>
-      <span class="qtd-chip"><span class="swatch" style="background:#6b7770;"></span>2024 <strong>438</strong></span>
-      <span class="qtd-chip"><span class="swatch" style="background:#1f5fa8;"></span>2025 <strong>536</strong></span>
-      <span class="qtd-chip"><span class="swatch" style="background:#00643c;"></span>2026 · jan–set <strong>825</strong></span>
+    <div class="periodo-filtro">
+      <span class="periodo-titulo">Período</span>
+      <div class="periodo-campos">
+        <label for="selDe">De</label>
+        <select id="selDe" class="qtd-select"></select>
+        <label for="selAte">até</label>
+        <select id="selAte" class="qtd-select"></select>
+      </div>
+      <div class="periodo-atalhos" id="periodoAtalhos"></div>
     </div>
+
+    <div class="qtd-chips" id="qtdChips"></div>
 
     <div class="qtd-controls">
       <label for="selCodigo">Filtrar gráfico:</label>
@@ -1069,34 +1125,54 @@
     ? Object.values(QTD[ano][mes] || {}).reduce((s, v) => s + v, 0)
     : qtdDe(ano, mes, cod);
 
-  // --- Gráfico: série de 30 meses com filtro por código ---
-  const labelsQtd = [], serieAnos = [];
+  // --- Série cronológica completa e período selecionado ---
+  const serie = [];
+  const idxSerie = {};
   anosQtd.forEach(ano => {
     for (let m = 1; m <= mesesAno[ano]; m++) {
-      labelsQtd.push(meses[m - 1] + '/' + ano.slice(2));
-      serieAnos.push(ano);
+      idxSerie[ano + '-' + m] = serie.length;
+      serie.push({ ano, mes: m, label: meses[m - 1] + '/' + ano.slice(2) });
     }
   });
+  const periodo = { ini: 0, fim: serie.length - 1 };
+  const fatiaPeriodo = () => serie.slice(periodo.ini, periodo.fim + 1);
+  let anoAtivo = '2026';
 
+  // --- Controles do período ---
+  const selDe = document.getElementById('selDe');
+  const selAte = document.getElementById('selAte');
+  serie.forEach((s, i) => {
+    const opt = `<option value="${i}">${meses[s.mes - 1]}/${s.ano}</option>`;
+    selDe.insertAdjacentHTML('beforeend', opt);
+    selAte.insertAdjacentHTML('beforeend', opt);
+  });
+
+  const atalhos = [{ id: 'tudo', nome: 'Todo o período', faixa: () => [0, serie.length - 1] }];
+  anosQtd.forEach(a => atalhos.push({
+    id: a, nome: a, faixa: () => [idxSerie[a + '-1'], idxSerie[a + '-' + mesesAno[a]]]
+  }));
+  atalhos.push({ id: '12m', nome: 'Últimos 12 meses', faixa: () => [Math.max(0, serie.length - 12), serie.length - 1] });
+  const boxAtalhos = document.getElementById('periodoAtalhos');
+  atalhos.forEach(a => boxAtalhos.insertAdjacentHTML('beforeend',
+    `<button type="button" class="atalho" data-id="${a.id}">${a.nome}</button>`));
+
+  // --- Gráfico: meses do período com filtro por código ---
   const selCodigo = document.getElementById('selCodigo');
   selCodigo.insertAdjacentHTML('beforeend', '<option value="todos">Todos os códigos (total de itens)</option>');
   codigos.forEach(c => {
     selCodigo.insertAdjacentHTML('beforeend', `<option value="${c}">${c} — ${SERVICOS[c]}</option>`);
   });
 
-  const dadosGrafico = cod => labelsQtd.map((_, i) => {
-    const ano = serieAnos[i];
-    const mes = String((i - anosQtd.slice(0, anosQtd.indexOf(ano)).reduce((s, a) => s + mesesAno[a], 0)) + 1);
-    return totalMes(ano, mes, cod === 'todos' ? 'todos' : String(cod));
-  });
+  const dadosGrafico = cod => fatiaPeriodo().map(s =>
+    totalMes(s.ano, String(s.mes), cod === 'todos' ? 'todos' : String(cod)));
 
   const chartQtd = new Chart(document.getElementById('chartQtd'), {
     type: 'bar',
     data: {
-      labels: labelsQtd,
+      labels: serie.map(s => s.label),
       datasets: [{
         data: dadosGrafico('todos'),
-        backgroundColor: labelsQtd.map((_, i) => corAno[serieAnos[i]]),
+        backgroundColor: serie.map(s => corAno[s.ano]),
         borderRadius: 4
       }]
     },
@@ -1116,30 +1192,65 @@
     }
   });
 
-  selCodigo.addEventListener('change', () => {
+  function atualizarGrafico() {
+    const fatia = fatiaPeriodo();
+    chartQtd.data.labels = fatia.map(s => s.label);
     chartQtd.data.datasets[0].data = dadosGrafico(selCodigo.value);
+    chartQtd.data.datasets[0].backgroundColor = fatia.map(s => corAno[s.ano]);
     chartQtd.update();
-  });
+  }
 
-  // --- Tabela matriz códigos × meses, com abas de ano ---
+  selCodigo.addEventListener('change', atualizarGrafico);
+
+  // --- Chips de totais do período ---
+  function renderChips() {
+    const porAno = {};
+    let total = 0;
+    fatiaPeriodo().forEach(s => {
+      const t = totalMes(s.ano, String(s.mes), 'todos');
+      total += t;
+      porAno[s.ano] = porAno[s.ano] || { total: 0, meses: [] };
+      porAno[s.ano].total += t;
+      porAno[s.ano].meses.push(s.mes);
+    });
+    let html = `<span class="qtd-chip">Total do período <strong>${total.toLocaleString('pt-BR')} itens</strong></span>`;
+    anosQtd.filter(a => porAno[a]).forEach(a => {
+      const ms = porAno[a].meses;
+      let faixa = '';
+      if (ms.length < 12) {
+        const ini = meses[ms[0] - 1], fim = meses[ms[ms.length - 1] - 1];
+        faixa = ' · ' + (ms.length === 1 ? ini : ini + '–' + fim).toLowerCase();
+      }
+      html += `<span class="qtd-chip"><span class="swatch" style="background:${corAno[a]};"></span>${a}${faixa} <strong>${porAno[a].total.toLocaleString('pt-BR')}</strong></span>`;
+    });
+    document.getElementById('qtdChips').innerHTML = html;
+  }
+
+  // --- Tabela matriz códigos × meses, com abas de ano (respeita o período) ---
   function montarTabelaQtd(ano) {
     const head = document.getElementById('qtdHead');
     const corpo = document.getElementById('qtdCorpo');
     const rodape = document.getElementById('qtdRodape');
+    const fatia = fatiaPeriodo();
 
     if (ano === 'consolidado') {
+      const anosVis = anosQtd.filter(a => fatia.some(s => s.ano === a));
+      const somaAno = (a, cod) => fatia.filter(s => s.ano === a)
+        .reduce((t, s) => t + qtdDe(a, String(s.mes), String(cod)), 0);
+
       let thsC = '<tr><th>Código de serviço</th>';
-      anosQtd.forEach(a => { thsC += `<th class="mes">${a}</th>`; });
+      anosVis.forEach(a => { thsC += `<th class="mes">${a}</th>`; });
       thsC += '<th class="mes total-col">Total geral</th></tr>';
       head.innerHTML = thsC;
 
       corpo.innerHTML = '';
-      const totaisPorAno = { '2024': 0, '2025': 0, '2026': 0 };
+      const totaisPorAno = {};
+      anosVis.forEach(a => { totaisPorAno[a] = 0; });
       codigos.forEach(cod => {
-        const valoresAno = anosQtd.map(a => Object.keys(QTD[a]).reduce((s, m) => s + qtdDe(a, m, String(cod)), 0));
+        const valoresAno = anosVis.map(a => somaAno(a, cod));
         const totalGeral = valoresAno.reduce((s, v) => s + v, 0);
-        if (totalGeral === 0) return; // omite códigos sem ocorrência em nenhum ano
-        anosQtd.forEach((a, i) => { totaisPorAno[a] += valoresAno[i]; });
+        if (totalGeral === 0) return; // omite códigos sem ocorrência no período
+        anosVis.forEach((a, i) => { totaisPorAno[a] += valoresAno[i]; });
         const maior = Math.max(...valoresAno);
         let tdsC = `<td class="cod-cell"><span class="cod-num">${cod}</span>${SERVICOS[cod]}</td>`;
         valoresAno.forEach(v => {
@@ -1154,7 +1265,7 @@
 
       let tfC = '<td>Total do ano</td>';
       let totalGeralTudo = 0;
-      anosQtd.forEach(a => {
+      anosVis.forEach(a => {
         tfC += `<td class="qtd">${totaisPorAno[a]}</td>`;
         totalGeralTudo += totaisPorAno[a];
       });
@@ -1163,18 +1274,24 @@
       return;
     }
 
-    const nMeses = mesesAno[ano];
+    const mesesVis = fatia.filter(s => s.ano === ano).map(s => s.mes);
+    if (!mesesVis.length) {
+      head.innerHTML = '';
+      corpo.innerHTML = `<tr><td class="vazio">Nenhum mês de ${ano} dentro do período selecionado.</td></tr>`;
+      rodape.innerHTML = '';
+      return;
+    }
+
     let ths = '<tr><th>Código de serviço</th>';
-    for (let m = 1; m <= nMeses; m++) ths += `<th class="mes">${meses[m - 1]}</th>`;
+    mesesVis.forEach(m => { ths += `<th class="mes">${meses[m - 1]}</th>`; });
     ths += '<th class="mes total-col">Total</th></tr>';
     head.innerHTML = ths;
 
     corpo.innerHTML = '';
     codigos.forEach(cod => {
-      const valores = [];
-      for (let m = 1; m <= nMeses; m++) valores.push(qtdDe(ano, String(m), String(cod)));
+      const valores = mesesVis.map(m => qtdDe(ano, String(m), String(cod)));
       const total = valores.reduce((s, v) => s + v, 0);
-      if (total === 0) return; // omite códigos sem ocorrência no ano
+      if (total === 0) return; // omite códigos sem ocorrência no período
       const maior = Math.max(...valores);
       let tds = `<td class="cod-cell"><span class="cod-num">${cod}</span>${SERVICOS[cod]}</td>`;
       valores.forEach(v => {
@@ -1189,23 +1306,60 @@
 
     let tf = '<td>Total do mês</td>';
     let totalAno = 0;
-    for (let m = 1; m <= nMeses; m++) {
+    mesesVis.forEach(m => {
       const t = totalMes(ano, String(m), 'todos');
       totalAno += t;
       tf += `<td class="qtd">${t}</td>`;
-    }
+    });
     tf += `<td class="qtd total-col">${totalAno}</td>`;
     rodape.innerHTML = `<tr>${tf}</tr>`;
   }
 
+  // --- Aplicação do período (gráfico, chips e tabela) ---
+  function atualizarAbas() {
+    document.querySelectorAll('.ano-tab').forEach(b => b.classList.toggle('ativo', b.dataset.ano === anoAtivo));
+  }
+
+  function aplicarPeriodo(ini, fim) {
+    periodo.ini = ini;
+    periodo.fim = fim;
+    selDe.value = ini;
+    selAte.value = fim;
+    document.querySelectorAll('.atalho').forEach(b => {
+      const [i, f] = atalhos.find(a => a.id === b.dataset.id).faixa();
+      b.classList.toggle('ativo', i === ini && f === fim);
+    });
+    const fatia = fatiaPeriodo();
+    if (anoAtivo !== 'consolidado' && !fatia.some(s => s.ano === anoAtivo)) {
+      anoAtivo = fatia[fatia.length - 1].ano; // aba do ano fora do período → vai para o último ano exibido
+    }
+    atualizarAbas();
+    atualizarGrafico();
+    renderChips();
+    montarTabelaQtd(anoAtivo);
+  }
+
+  selDe.addEventListener('change', () => {
+    const de = +selDe.value;
+    aplicarPeriodo(de, Math.max(de, +selAte.value));
+  });
+  selAte.addEventListener('change', () => {
+    const ate = +selAte.value;
+    aplicarPeriodo(Math.min(+selDe.value, ate), ate);
+  });
+  boxAtalhos.addEventListener('click', e => {
+    const btn = e.target.closest('.atalho');
+    if (btn) aplicarPeriodo(...atalhos.find(a => a.id === btn.dataset.id).faixa());
+  });
   document.querySelectorAll('.ano-tab').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.ano-tab').forEach(b => b.classList.remove('ativo'));
-      btn.classList.add('ativo');
-      montarTabelaQtd(btn.dataset.ano);
+      anoAtivo = btn.dataset.ano;
+      atualizarAbas();
+      montarTabelaQtd(anoAtivo);
     });
   });
-  montarTabelaQtd('2026');
+
+  aplicarPeriodo(0, serie.length - 1);
 </script>
 
 </body>
