@@ -15,6 +15,9 @@ const d2025 = [
   23784.03, 10635.7, 61230.74, 39249.14,
 ];
 
+
+
+
 // Medições de 2026 por período de competência.
 // mes: índice do mês (0 = Jan); parte: 1ª/2ª quinzena, ou null para medição única
 const quinzenas2026 = [

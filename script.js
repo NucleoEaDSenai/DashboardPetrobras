@@ -584,7 +584,7 @@ const htmlDestaques = [...destaques]
       console.warn(
         `Destaque "${d.projeto}": qtd ${d.qtd} maior que o total do código ${d.codigo} em ${quando} no QTD (${totalCod}).`,
       );
-      peso = `<span class="destaque-peso erro">⚠ Quantidade maior que o total do código no mês (${totalCod}) — confira dados.js</span>`;
+      peso = `<span class="destaque-peso erro">⚠ Quantidade maior que o total do código no mês (${totalCod}) — confira os dados</span>`;
       classeErro = ' class="destaque-erro"';
     } else {
       const pct = Math.round((d.qtd / totalCod) * 100);
