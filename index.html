@@ -1,193 +1,230 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medições de Serviços Petrobras — Comparativo 2024–2026</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<!-- ============== HERO ============== -->
-<header class="hero">
-  <div class="hero-inner">
-    <div class="hero-badge"><span class="dot"></span> Relatório executivo · Atualizado em <span id="atualizadoEm"></span></div>
-    <h1>Medições de Serviços <em>Petrobras</em><br>Comparativo plurianual 2024–2026</h1>
-    <p>Análise consolidada de todos os valores faturados mês a mês, com totais anuais, médias, picos, vales e detalhamento quinzenal do ano corrente.</p>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- ============== KPIs ============== -->
-  <div class="kpi-grid" id="kpis"></div>
-
-  <!-- ============== EVOLUÇÃO MENSAL ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">01</span>Evolução mensal comparada</h2>
-      <p class="section-sub">Cada linha representa um ano. Compare o mesmo mês entre exercícios diferentes.</p>
-    </div>
-    <div class="legend">
-      <span class="legend-item"><span class="legend-swatch" style="background: #6b7770;"></span>2024</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: #1f5fa8;"></span>2025</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: #00643c;"></span>2026</span>
-    </div>
-    <div class="chart-wrap tall">
-      <canvas id="chartEvolucao"></canvas>
-    </div>
-  </section>
-
-  <!-- ============== TOTAIS ANUAIS ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">02</span>Totais anuais</h2>
-      <p class="section-sub" id="totaisSub"></p>
-    </div>
-    <div class="chart-wrap short">
-      <canvas id="chartTotais"></canvas>
-    </div>
-  </section>
-
-  <!-- ============== DETALHAMENTO 2026 ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">03</span>Detalhamento quinzenal de 2026</h2>
-      <p class="section-sub">Medições por período de competência, mostrando a sazonalidade dentro de cada mês.</p>
-    </div>
-    <div class="chart-wrap med">
-      <canvas id="chart2026"></canvas>
-    </div>
-  </section>
-
-  <!-- ============== PICOS E VALES ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">04</span>Picos e vales</h2>
-      <p class="section-sub">Maior e menor medição registrada em cada ano.</p>
-    </div>
-    <div class="highlights" id="picosVales"></div>
-  </section>
-
-  <!-- ============== INSIGHTS ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">05</span>Insights da análise</h2>
-      <p class="section-sub">Pontos-chave que merecem atenção.</p>
-    </div>
-    <div class="insights" id="insights"></div>
-  </section>
-
-  <!-- ============== TABELA COMPARATIVA ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">06</span>Tabela comparativa completa</h2>
-      <p class="section-sub">Todos os valores mensais lado a lado para fácil conferência.</p>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th class="num">2024</th>
-            <th class="num">2025</th>
-            <th class="num">2026</th>
-            <th class="num">Var. 25→26</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaCorpo"></tbody>
-        <tfoot id="tabelaRodape"></tfoot>
-      </table>
-    </div>
-    <p id="tabelaNota" style="font-size: 12px; color: var(--muted); margin-top: 12px;"></p>
-  </section>
-
-  <!-- ============== DETALHE QUINZENAL ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">07</span>Medições das quinzenas de 2026</h2>
-      <p class="section-sub">Períodos exatos de competência conforme medições oficiais.</p>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th>Período</th>
-            <th class="num">Valor</th>
-          </tr>
-        </thead>
-        <tbody id="quinzenasCorpo"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ============== QUANTITATIVO POR CÓDIGO DE SERVIÇO ============== -->
-  <section class="section">
-    <div class="section-header">
-      <h2><span class="num">08</span>Quantitativo por código de serviço</h2>
-      
-    </div>
-
-    <div class="periodo-filtro">
-      <span class="periodo-titulo">Período</span>
-      <div class="periodo-campos">
-        <label for="selDe">De</label>
-        <select id="selDe" class="qtd-select"></select>
-        <label for="selAte">até</label>
-        <select id="selAte" class="qtd-select"></select>
-      </div>
-      <div class="periodo-atalhos" id="periodoAtalhos"></div>
-    </div>
-
-    <div class="qtd-chips" id="qtdChips"></div>
-
-    <div class="qtd-controls">
-      <label for="selCodigo">Filtrar gráfico:</label>
-      <select id="selCodigo" class="qtd-select"></select>
-    </div>
-    <div class="chart-wrap med">
-      <canvas id="chartQtd"></canvas>
-    </div>
-
-    <div class="ano-tabs" id="anoTabs" role="tablist">
-      <button class="ano-tab" data-ano="2024">2024</button>
-      <button class="ano-tab" data-ano="2025">2025</button>
-      <button class="ano-tab ativo" data-ano="2026">2026</button>
-      <button class="ano-tab" data-ano="consolidado">Consolidado · 2024 a 2026</button>
-    </div>
-    <div class="table-wrap">
-      <table class="qtd-table">
-        <thead id="qtdHead"></thead>
-        <tbody id="qtdCorpo"></tbody>
-        <tfoot id="qtdRodape"></tfoot>
-      </table>
-    </div>
-    <p style="font-size: 12px; color: var(--muted); margin-top: 12px;">
-      Célula destacada em amarelo = maior quantitativo do código no ano.
-    </p>
-
-    <div class="destaque-balao">
-      <div class="destaque-balao-head">
-        <span class="destaque-balao-icon">★</span>
-        <div>
-          <strong>Projetos com maior volume de criação/edição de imagens — 2026</strong>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medições de Serviços Petrobras — Comparativo 2024–2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ============== HERO ============== -->
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <span class="dot"></span> Relatório executivo · Atualizado em
+          <span id="atualizadoEm"></span>
         </div>
+        <h1>
+          Medições de Serviços <em>Petrobras</em><br />Comparativo plurianual
+          2024–2026
+        </h1>
+        <p>
+          Análise consolidada de todos os valores medidos mês a mês, com totais
+          anuais, médias, picos, vales e detalhamento quinzenal do ano corrente.
+        </p>
       </div>
-      <ul class="destaque-lista" id="destaques"></ul>
+    </header>
+
+    <div class="container">
+      <!-- ============== KPIs ============== -->
+      <div class="kpi-grid" id="kpis"></div>
+
+      <!-- ============== EVOLUÇÃO MENSAL ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">01</span>Evolução mensal comparada</h2>
+          <p class="section-sub">
+            Cada linha representa um ano. Compare o mesmo mês entre exercícios
+            diferentes.
+          </p>
+        </div>
+        <div class="legend">
+          <span class="legend-item"
+            ><span class="legend-swatch" style="background: #6b7770"></span
+            >2024</span
+          >
+          <span class="legend-item"
+            ><span class="legend-swatch" style="background: #1f5fa8"></span
+            >2025</span
+          >
+          <span class="legend-item"
+            ><span class="legend-swatch" style="background: #00643c"></span
+            >2026</span
+          >
+        </div>
+        <div class="chart-wrap tall">
+          <canvas id="chartEvolucao"></canvas>
+        </div>
+      </section>
+
+      <!-- ============== TOTAIS ANUAIS ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">02</span>Totais anuais</h2>
+          <p class="section-sub" id="totaisSub"></p>
+        </div>
+        <div class="chart-wrap short">
+          <canvas id="chartTotais"></canvas>
+        </div>
+      </section>
+
+      <!-- ============== DETALHAMENTO 2026 ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">03</span>Detalhamento quinzenal de 2026</h2>
+          <p class="section-sub">
+            Medições por período de competência, mostrando a sazonalidade dentro
+            de cada mês.
+          </p>
+        </div>
+        <div class="chart-wrap med">
+          <canvas id="chart2026"></canvas>
+        </div>
+      </section>
+
+      <!-- ============== PICOS E VALES ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">04</span>Picos e vales</h2>
+          <p class="section-sub">
+            Maior e menor medição registrada em cada ano.
+          </p>
+        </div>
+        <div class="highlights" id="picosVales"></div>
+      </section>
+
+      <!-- ============== INSIGHTS ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">05</span>Insights da análise</h2>
+          <p class="section-sub">Pontos-chave que merecem atenção.</p>
+        </div>
+        <div class="insights" id="insights"></div>
+      </section>
+
+      <!-- ============== TABELA COMPARATIVA ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">06</span>Tabela comparativa completa</h2>
+          <p class="section-sub">
+            Todos os valores mensais lado a lado para fácil conferência.
+          </p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th class="num">2024</th>
+                <th class="num">2025</th>
+                <th class="num">2026</th>
+                <th class="num">Var. 25→26</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaCorpo"></tbody>
+            <tfoot id="tabelaRodape"></tfoot>
+          </table>
+        </div>
+        <p
+          id="tabelaNota"
+          style="font-size: 12px; color: var(--muted); margin-top: 12px"
+        ></p>
+      </section>
+
+      <!-- ============== DETALHE QUINZENAL ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">07</span>Medições das quinzenas de 2026</h2>
+          <p class="section-sub">
+            Períodos exatos de competência conforme medições oficiais.
+          </p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Período</th>
+                <th class="num">Valor</th>
+              </tr>
+            </thead>
+            <tbody id="quinzenasCorpo"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============== QUANTITATIVO POR CÓDIGO DE SERVIÇO ============== -->
+      <section class="section">
+        <div class="section-header">
+          <h2><span class="num">08</span>Quantitativo por código de serviço</h2>
+        </div>
+
+        <div class="periodo-filtro">
+          <span class="periodo-titulo">Período</span>
+          <div class="periodo-campos">
+            <label for="selDe">De</label>
+            <select id="selDe" class="qtd-select"></select>
+            <label for="selAte">até</label>
+            <select id="selAte" class="qtd-select"></select>
+          </div>
+          <div class="periodo-atalhos" id="periodoAtalhos"></div>
+        </div>
+
+        <div class="qtd-chips" id="qtdChips"></div>
+
+        <div class="qtd-controls">
+          <label for="selCodigo">Filtrar gráfico:</label>
+          <select id="selCodigo" class="qtd-select"></select>
+        </div>
+        <div class="chart-wrap med">
+          <canvas id="chartQtd"></canvas>
+        </div>
+
+        <div class="ano-tabs" id="anoTabs" role="tablist">
+          <button class="ano-tab" data-ano="2024">2024</button>
+          <button class="ano-tab" data-ano="2025">2025</button>
+          <button class="ano-tab ativo" data-ano="2026">2026</button>
+          <button class="ano-tab" data-ano="consolidado">
+            Consolidado · 2024 a 2026
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table class="qtd-table">
+            <thead id="qtdHead"></thead>
+            <tbody id="qtdCorpo"></tbody>
+            <tfoot id="qtdRodape"></tfoot>
+          </table>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-top: 12px">
+          Célula destacada em amarelo = maior quantitativo do código no ano.
+        </p>
+
+        <div class="destaque-balao">
+          <div class="destaque-balao-head">
+            <span class="destaque-balao-icon">★</span>
+            <div>
+              <strong
+                >Projetos com maior volume de criação/edição de imagens —
+                2026</strong
+              >
+            </div>
+          </div>
+          <ul class="destaque-lista" id="destaques"></ul>
+        </div>
+      </section>
     </div>
-  </section>
 
-</div>
-
-<footer id="footer">
-  <!-- <strong>Comparativo de Medições Petrobras</strong> · Dashboard gerado em setembro de 2026 · Dados parciais para o exercício corrente -->
-</footer>
-<script src="dados.js"></script>
-<script src="script.js"></script>
-</body>
+    <footer id="footer">
+      <!-- <strong>Comparativo de Medições Petrobras</strong> · Dashboard gerado em setembro de 2026 · Dados parciais para o exercício corrente -->
+    </footer>
+    <script src="dados.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>
