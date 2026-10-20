@@ -14,8 +14,30 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- ============== BLOQUEIO POR SENHA (desbloquear.js) ============== -->
+    <div id="bloqueio" class="bloqueio" hidden>
+      <form id="bloqueioForm" class="bloqueio-card">
+        <h2>Acesso restrito</h2>
+        <p>Digite a senha para visualizar o dashboard.</p>
+        <input
+          id="bloqueioSenha"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Senha"
+          required
+        />
+        <label class="bloqueio-lembrar">
+          <input id="bloqueioLembrar" type="checkbox" checked />
+          Lembrar neste computador
+        </label>
+        <p id="bloqueioErro" class="bloqueio-erro" hidden></p>
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+
     <!-- ============== HERO ============== -->
     <header class="hero">
+      <button id="btnSair" class="btn-sair" type="button" hidden>Sair</button>
       <div class="hero-inner">
         <div class="hero-badge">
           <span class="dot"></span> Relatório executivo · Atualizado em
@@ -224,7 +246,7 @@
     <footer id="footer">
       <!-- <strong>Comparativo de Medições Petrobras</strong> · Dashboard gerado em setembro de 2026 · Dados parciais para o exercício corrente -->
     </footer>
-    <script src="dados.js"></script>
-    <script src="script.js"></script>
+    <!-- Decifra dados.enc e só então carrega script.js -->
+    <script src="desbloquear.js"></script>
   </body>
 </html>

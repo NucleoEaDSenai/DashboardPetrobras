@@ -684,3 +684,64 @@
   .kpi:nth-child(2) { animation-delay: 0.15s; }
   .kpi:nth-child(3) { animation-delay: 0.25s; }
   .kpi:nth-child(4) { animation-delay: 0.35s; }
+  /* ====== BLOQUEIO POR SENHA ====== */
+  .bloqueio {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(180deg, var(--green-deep) 0%, var(--green-mid) 100%);
+  }
+  .bloqueio[hidden] { display: none; }
+  .bloqueio-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  }
+  .bloqueio-card h2 { font-family: 'Fraunces', serif; color: var(--green-deep); }
+  .bloqueio-card p { color: var(--muted); font-size: 0.9rem; }
+  .bloqueio-card input[type="password"] {
+    font: inherit;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .bloqueio-card input[type="password"]:focus { outline: 2px solid var(--green-mid); border-color: transparent; }
+  .bloqueio-lembrar { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--ink-soft); }
+  .bloqueio-card .bloqueio-erro { color: var(--danger); font-weight: 500; }
+  .bloqueio-card button {
+    font: inherit;
+    font-weight: 600;
+    padding: 0.7rem;
+    border: 0;
+    border-radius: 8px;
+    background: var(--green-deep);
+    color: white;
+    cursor: pointer;
+  }
+  .bloqueio-card button:disabled { opacity: 0.6; cursor: wait; }
+
+  .btn-sair {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+  }
+  .btn-sair:hover { background: rgba(255, 255, 255, 0.15); }
